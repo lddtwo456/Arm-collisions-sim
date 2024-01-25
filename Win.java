@@ -1,8 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.MouseInfo;
-import java.awt.Point;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
@@ -45,8 +43,6 @@ public class Win extends JFrame {
             for (ConvexPolygon polygon : this.polygons) {
                 polygon.draw(g, true, this.scale, this.getWidth(), this.getHeight());
             }
-
-            System.out.println(polygons.get(0).isColliding(polygons.get(1)));
         }
     }
 }
