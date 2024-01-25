@@ -7,7 +7,6 @@ class Main {
 
         sim.constrain("end", "strt");
 
-        sim.setScale(20);
-        sim.createWindow(800, 500);
+        sim.init();
     }
 }

@@ -1,21 +1,33 @@
 import java.util.ArrayList;
 
 public class Sim {
+    boolean run;
+    boolean visualize;
+
     float scale;
     ArrayList<ConvexPolygon> polygons;
     Win win;
 
     public Sim() {
-        polygons = new ArrayList<ConvexPolygon>();
+        this.visualize = false;
+        this.polygons = new ArrayList<ConvexPolygon>();
+    }
+
+    public void init() {
+        this.update();
+    }
+
+    public void update() {
+        if (visualize) {
+            this.win.repaint();
+        }
+
+        System.out.println(this.polygons.get(0).isColliding(this.polygons.get(1)));
     }
 
     public void createWindow(int w, int h) {
+        visualize = true;
         win = new Win(w+16, h+38, this.scale, this.polygons);
-        
-        while (true) {
-            win.repaint();
-            System.out.println(this.polygons.get(0).isColliding(this.polygons.get(1)));
-        }
     }
 
     public void setScale(float scale) {
