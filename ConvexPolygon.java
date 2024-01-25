@@ -37,9 +37,13 @@ class ConvexPolygon {
 
         if (draw_mates) {
             g.setColor(Color.RED);
-            g.fillOval(Math.round(this.getMate1X() * scale + (screen_width/2)), Math.round(-this.getMate1Y() * scale + (screen_width/2)), 5, 5);
-            g.fillOval(Math.round(this.getMate2X() * scale + (screen_width/2)), Math.round(-this.getMate2Y() * scale + (screen_width/2)), 5, 5);
+            g.fillOval(Math.round(this.getMate1X() * scale + (screen_width/2)), Math.round(-this.getMate1Y() * scale + (screen_height/2)), 5, 5);
+            g.fillOval(Math.round(this.getMate2X() * scale + (screen_width/2)), Math.round(-this.getMate2Y() * scale + (screen_height/2)), 5, 5);
         }
+    }
+
+    public float[] getVert(int i) {
+        return new float[]{this.getVertX(i), this.getVertY(i)};
     }
 
     public float getVertX(int i) {
@@ -50,12 +54,20 @@ class ConvexPolygon {
         return this.vertices[i][1] + this.origin_pos[1];
     }
 
+    public float[] getMate1() {
+        return new float[]{this.getMate1X(), this.getMate1Y()};
+    }
+
     public float getMate1X() {
         return this.mate_1[0] + this.origin_pos[0];
     }
 
     public float getMate1Y() {
         return this.mate_1[1] + this.origin_pos[1];
+    }
+
+    public float[] getMate2() {
+        return new float[]{this.getMate2X(), this.getMate2Y()};
     }
 
     public float getMate2X() {
@@ -108,26 +120,14 @@ class ConvexPolygon {
             // get perpendicular line
             float[][] l;
             try {
-                l = ConvexPolygon.getPerpendicular(new float[][]{{this.vertices[i][0], this.vertices[i][1]}, {this.vertices[i+1][0], this.vertices[i+1][1]}});
+                l = ConvexPolygon.getPerpendicular(new float[][]{{this.getVertX(i), this.getVertY(i)}, {this.getVertX(i+1), this.getVertY(i+1)}});
             } catch (Exception e) {
-                l = ConvexPolygon.getPerpendicular(new float[][]{{this.vertices[i][0], this.vertices[i][1]}, {this.vertices[0][0], this.vertices[0][1]}});
+                l = ConvexPolygon.getPerpendicular(new float[][]{{this.getVertX(i), this.getVertY(i)}, {this.getVertX(0), this.getVertY(0)}});
             }
 
             // get projected lines
             float[][] this_projection = ConvexPolygon.getBounds(this.projectOnLine(l));
             float[][] p_projection = ConvexPolygon.getBounds(p.projectOnLine(l));
-            
-            /*
-            for (float[] guy : this_projection) {
-                System.out.println(guy[0]+" "+guy[1]);
-            } 
-            System.out.print(((this_projection[1][1]-this_projection[0][1])/(this_projection[1][0]-this_projection[0][0]))+"\n");
-            for (float[] guy : p_projection) {
-                System.out.println(guy[0]+" "+guy[1]);
-            } 
-            System.out.println(((p_projection[1][1]-p_projection[0][1])/(p_projection[1][0]-p_projection[0][0])));
-            System.out.println("---------------------");
-            */
 
             if (!ConvexPolygon.lineIsOverlapping(this_projection, p_projection)) {
                 result = false;
@@ -149,7 +149,7 @@ class ConvexPolygon {
         float[][] projection = new float[this.vertices.length][2];
 
         for (int i = 0; i < this.vertices.length; i++) {
-            float[] vert = this.vertices[i];
+            float[] vert = this.getVert(i);
 
             float t = ((vert[0] - l[0][0]) * (l[1][0] - l[0][0])) / d_sqr + ((vert[1] - l[0][1]) * (l[1][1] - l[0][1])) / d_sqr;
             float[] projected_point = new float[]{l[0][0] + t * (l[1][0] - l[0][0]), l[0][1] + t * (l[1][1] - l[0][1])};
@@ -194,6 +194,7 @@ class ConvexPolygon {
 
     public static boolean lineIsOverlapping(float[][] l1, float[][] l2) {
         // if not vertical
+
         if (l1[0][0] != l1[1][0]) {
             if ((l2[0][0] <= l1[1][0]) && (l2[0][0] >= l1[0][0])) {
                 return true;
