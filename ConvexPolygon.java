@@ -20,7 +20,7 @@ class ConvexPolygon {
         this.vertices = vertices;
         this.origin_pos = origin_pos;
 
-        if (this.vertices.length > 1) {
+        if (this.vertices != null) {
             for (float[] vert : this.vertices) {
                 vert[0] += this.origin_pos[0];
                 vert[1] += this.origin_pos[1];
@@ -35,7 +35,7 @@ class ConvexPolygon {
         this.mate_1 = mate_1;
         this.mate_2 = mate_2;
         
-        if (this.origin_pos.length > 1) {
+        if (this.origin_pos != null) {
             this.mate_1[0] += this.origin_pos[0];
             this.mate_1[1] += this.origin_pos[1];
             this.mate_2[0] += this.origin_pos[0];
@@ -167,7 +167,6 @@ class ConvexPolygon {
     }
 
     public boolean isOverlapping(ConvexPolygon p) {
-        boolean result = true;
         for (int i = 0; i < this.vertices.length; i++) {
             // get perpendicular line
             float[][] l;
@@ -178,14 +177,15 @@ class ConvexPolygon {
             }
 
             // get projected lines
-            float[][] this_projection = ConvexPolygon.getBounds(this.projectOnLine(l));
-            float[][] p_projection = ConvexPolygon.getBounds(p.projectOnLine(l));
+            float[] this_projection = ConvexPolygon.getBounds(this.getTOnLine(l));
+            float[] p_projection = ConvexPolygon.getBounds(p.getTOnLine(l));
 
-            if (!ConvexPolygon.lineIsOverlapping(this_projection, p_projection)) {
-                result = false;
+            if (!ConvexPolygon.tIsOverlapping(this_projection, p_projection)) {
+                return false;
             }
         }
-        return result;
+
+        return true;
     }
 
     public static float[][] getPerpendicular(float[][] l) {
@@ -194,71 +194,46 @@ class ConvexPolygon {
         return (new float[][]{{-1*(l[0][1] - midpoint[1]) + midpoint[1], l[0][0]}, {-1*(l[1][1] - midpoint[1]) + midpoint[1], l[1][0]}});
     }
 
-    public float[][] projectOnLine(float[][] l) {
+    public float[] getTOnLine(float[][] l) {
         float d_sqr = (l[0][0]-l[1][0])*(l[0][0]-l[1][0]) + (l[0][1]-l[1][1])*(l[0][1]-l[1][1]);
 
         // min, max
-        float[][] projection = new float[this.vertices.length][2];
+        float[] projection_t = new float[this.vertices.length];
 
         for (int i = 0; i < this.vertices.length; i++) {
             float[] vert = this.getVert(i);
-
-            float t = ((vert[0] - l[0][0]) * (l[1][0] - l[0][0])) / d_sqr + ((vert[1] - l[0][1]) * (l[1][1] - l[0][1])) / d_sqr;
-            float[] projected_point = new float[]{l[0][0] + t * (l[1][0] - l[0][0]), l[0][1] + t * (l[1][1] - l[0][1])};
-
-            projection[i] = projected_point;
+            
+            projection_t[i] = ((vert[0] - l[0][0]) * (l[1][0] - l[0][0])) / d_sqr + ((vert[1] - l[0][1]) * (l[1][1] - l[0][1])) / d_sqr;
         }
 
-        return projection;
+        return projection_t;
     }
 
-    public static float[][] getBounds(float[][] l) {
+    public static float[] getBounds(float[] l) {
         // min max
-        float[][] bounds = new float[][]{l[0], l[0]};
+        float[] bounds = new float[]{l[0], l[0]};
 
-        // check if vertical
-        boolean vertical = true;
-        if (l[0][0] != l[1][0]) {
-            vertical = false;
-        }
-
-        // if not vertical, sort by x, else sort by y
-        if (!vertical) {
-            for (float[] vert : l) {
-                if (vert[0] > bounds[1][0]) {
-                    bounds[1] = vert;
-                } if (vert[0] < bounds[0][0]) {
-                    bounds[0] = vert;
-                }
-            }
-        } else {
-            for (float[] vert : l) {
-                if (vert[1] > bounds[1][1]) {
-                    bounds[1] = vert;
-                } if (vert[1] < bounds[0][1]) {
-                    bounds[0] = vert;
-                }
+        // sort by t
+        for (float t : l) {
+            if (t > bounds[1]) {
+                bounds[1] = t;
+            } if (t < bounds[0]) {
+                bounds[0] = t;
             }
         }
 
         return bounds;
     }
 
-    public static boolean lineIsOverlapping(float[][] l1, float[][] l2) {
-        // if not vertical
-
-        if (l1[0][0] != l1[1][0]) {
-            if ((l2[0][0] <= l1[1][0]) && (l2[0][0] >= l1[0][0])) {
-                return true;
-            } else if ((l2[1][0] <= l1[1][0]) && (l2[1][0] >= l1[0][0])) {
-                return true;
-            }
-        } else {
-            if ((l2[0][1] <= l1[1][1]) && (l2[0][1] >= l1[0][1])) {
-                return true;
-            } else if ((l2[1][1] <= l1[1][1]) && (l2[1][1] >= l1[0][1])) {
-                return true;
-            }
+    public static boolean tIsOverlapping(float[] l1, float[] l2) {
+        if (l1[0] <= l2[1] && l1[0] >= l2[0]) {
+            return true;
+        } if (l1[1] <= l2[1] && l1[1] >= l2[0]) {
+            return true;
+        } if (l2[0] <= l1[1] && l2[0] >= l1[0]) {
+            return true;
+        } if (l2[1] <= l1[1] && l2[1] >= l1[0]) {
+            return true;
         }
 
         return false;

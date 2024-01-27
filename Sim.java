@@ -36,8 +36,8 @@ public class Sim {
     }
 
     public void constrain(String name1, String name2) {
-        ConvexPolygon p1 = new ConvexPolygon("nul", new float[1][1], new float[1], new float[1], new float[1]);
-        ConvexPolygon p2 = new ConvexPolygon("nul", new float[1][1], new float[1], new float[1], new float[1]);
+        ConvexPolygon p1 = new ConvexPolygon("null", null, null, null, null);
+        ConvexPolygon p2 = new ConvexPolygon("null", null, null, null, null);
 
         for (ConvexPolygon p : this.polygons) {
             if (p.name == name1) {
@@ -71,32 +71,21 @@ public class Sim {
     }
 
     public boolean checkCollision(String name1, String name2) {
-        ConvexPolygon p1 = this.polygons.get(0);
-        ConvexPolygon p2 = this.polygons.get(0);
+        ConvexPolygon p1 = new ConvexPolygon("null", null, null, null, null);
+        ConvexPolygon p2 = new ConvexPolygon("null", null, null, null, null);
 
-        boolean p1_found = false;
-        boolean p2_found = false;
-
-        for (ConvexPolygon p : this.polygons){
+        for (ConvexPolygon p : this.polygons) {
             if (p.name == name1) {
-                p1_found = true;
                 p1 = p;
             } else if (p.name == name2) {
-                p2_found = true;
                 p2 = p;
             }
         }
 
-        if (p1_found && p2_found) {
+        if (p1.name != "null" && p2.name != "null") {
             return p1.isColliding(p2);
         } else {
-            System.out.print("could not find segment: ");
-            if (p1_found) {
-                System.out.println(name2);
-            } else {
-                System.out.println(name1);
-            }
-
+            System.out.println("could not find polygons");
             return false;
         }
     }
