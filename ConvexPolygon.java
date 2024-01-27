@@ -14,11 +14,16 @@ class ConvexPolygon {
     ConvexPolygon constrainedTo;
     ConvexPolygon constrainedToThis;
 
+    boolean is_colliding;
+    boolean is_in_bounds;
+
     String name;
 
     public ConvexPolygon(String name, float[][] vertices, float[] origin_pos, float[] mate_1, float[] mate_2) {
         this.vertices = vertices;
         this.origin_pos = origin_pos;
+        this.is_colliding = false;
+        this.is_in_bounds = true;
 
         if (this.vertices != null) {
             for (float[] vert : this.vertices) {
@@ -52,8 +57,18 @@ class ConvexPolygon {
             y_points[i] = Math.round(-this.getVertY(i) * scale + (screen_height/2));
         }
 
-        g.setColor(Color.WHITE);
-        g.drawPolygon(new Polygon(x_points, y_points, this.vertices.length));
+        if (!is_colliding) {
+
+            if (this.name == "limits" || !this.is_in_bounds) {
+                g.setColor(Color.BLUE);
+            } else {
+                g.setColor(Color.WHITE);
+            }
+            g.drawPolygon(new Polygon(x_points, y_points, this.vertices.length));
+        } else {
+            g.setColor(Color.RED);
+            g.drawPolygon(new Polygon(x_points, y_points, this.vertices.length));
+        }
 
         if (draw_mates) {
             g.setColor(Color.RED);
@@ -163,10 +178,21 @@ class ConvexPolygon {
 
 
     public boolean isColliding(ConvexPolygon p) {
-        return (this.isOverlapping(p) && p.isOverlapping(this));
+        if (!this.is_colliding) {
+            this.is_colliding = this.isOverlapping(p, false) && p.isOverlapping(this, false);
+        }
+        if (!p.is_colliding) {
+            p.is_colliding = this.is_colliding;
+        }
+        return this.is_colliding;
     }
 
-    public boolean isOverlapping(ConvexPolygon p) {
+    public boolean isWithin(ConvexPolygon p) {
+        this.is_in_bounds = this.isOverlapping(p, true) && p.isOverlapping(this, true);
+        return this.is_in_bounds;
+    }
+
+    public boolean isOverlapping(ConvexPolygon p, boolean fully) {
         for (int i = 0; i < this.vertices.length; i++) {
             // get perpendicular line
             float[][] l;
@@ -180,8 +206,14 @@ class ConvexPolygon {
             float[] this_projection = ConvexPolygon.getBounds(this.getTOnLine(l));
             float[] p_projection = ConvexPolygon.getBounds(p.getTOnLine(l));
 
-            if (!ConvexPolygon.tIsOverlapping(this_projection, p_projection)) {
-                return false;
+            if (fully) {
+                if (!ConvexPolygon.tIsFullyWithin(this_projection, p_projection)) {
+                    return false;
+                }
+            } else {
+                if (!ConvexPolygon.tIsOverlapping(this_projection, p_projection)) {
+                    return false;
+                }
             }
         }
 
@@ -233,6 +265,16 @@ class ConvexPolygon {
         } if (l2[0] <= l1[1] && l2[0] >= l1[0]) {
             return true;
         } if (l2[1] <= l1[1] && l2[1] >= l1[0]) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean tIsFullyWithin(float[] l1, float[] l2) {
+        if ((l1[0] <= l2[1] && l1[0] >= l2[0]) && (l1[1] <= l2[1] && l1[1] >= l2[0])) {
+            return true;
+        } if ((l2[0] <= l1[1] && l2[0] >= l1[0]) && (l2[1] <= l1[1] && l2[1] >= l1[0])) {
             return true;
         }
 
