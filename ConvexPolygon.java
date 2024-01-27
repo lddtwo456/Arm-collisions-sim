@@ -9,24 +9,44 @@ class ConvexPolygon {
     float[] mate_1;
     float[] mate_2;
 
-    boolean constrained;
+    boolean is_constrained;
+    boolean is_constrained_to;
     ConvexPolygon constrainedTo;
+    ConvexPolygon constrainedToThis;
 
     String name;
 
     public ConvexPolygon(String name, float[][] vertices, float[] origin_pos, float[] mate_1, float[] mate_2) {
         this.vertices = vertices;
         this.origin_pos = origin_pos;
+
+        if (this.vertices.length > 1) {
+            for (float[] vert : this.vertices) {
+                vert[0] += this.origin_pos[0];
+                vert[1] += this.origin_pos[1];
+            }
+        }
+
         this.name = name;
+
+        this.is_constrained = false;
+        this.is_constrained_to = false;
 
         this.mate_1 = mate_1;
         this.mate_2 = mate_2;
+        
+        if (this.origin_pos.length > 1) {
+            this.mate_1[0] += this.origin_pos[0];
+            this.mate_1[1] += this.origin_pos[1];
+            this.mate_2[0] += this.origin_pos[0];
+            this.mate_2[1] += this.origin_pos[1];
+        }
     }
 
     public void draw(Graphics g, boolean draw_mates, float scale, float screen_width, float screen_height) {
         int[] x_points = new int[this.vertices.length];
         int[] y_points = new int[this.vertices.length];
-        
+
         for (int i = 0; i < this.vertices.length; i++) {
             x_points[i] = Math.round(this.getVertX(i) * scale + (screen_width/2));
             y_points[i] = Math.round(-this.getVertY(i) * scale + (screen_height/2));
@@ -42,71 +62,103 @@ class ConvexPolygon {
         }
     }
 
-    public float[] getVert(int i) {
-        return new float[]{this.getVertX(i), this.getVertY(i)};
-    }
-
-    public float getVertX(int i) {
-        return this.vertices[i][0] + this.origin_pos[0];
-    }
-
-    public float getVertY(int i) {
-        return this.vertices[i][1] + this.origin_pos[1];
-    }
-
-    public float[] getMate1() {
-        return new float[]{this.getMate1X(), this.getMate1Y()};
-    }
-
-    public float getMate1X() {
-        return this.mate_1[0] + this.origin_pos[0];
-    }
-
-    public float getMate1Y() {
-        return this.mate_1[1] + this.origin_pos[1];
-    }
-
-    public float[] getMate2() {
-        return new float[]{this.getMate2X(), this.getMate2Y()};
-    }
-
-    public float getMate2X() {
-        return this.mate_2[0] + this.origin_pos[0];
-    }
-
-    public float getMate2Y() {
-        return this.mate_2[1] + this.origin_pos[1];
-    }
 
 
 
-    // MOVEMENT / CONSTRAINTS THINGS
+
+
+
+    // MOVEMENT/CONSTRAINTS THINGS
+
+
+
+
 
 
 
     public void move(float x, float y) {
-        if (!constrained) {
+        if (!is_constrained) {
+            for (float[] vert : this.vertices) {
+                vert[0] += x;
+                vert[1] += y;
+            }
+
             this.origin_pos[0] += x;
             this.origin_pos[1] += y;
+            this.mate_1[0] += x;
+            this.mate_1[1] += y;
+            this.mate_2[0] += x;
+            this.mate_2[1] += y;
+
+            if (is_constrained_to) {
+                this.updateConstrainedToThis();
+            }
         }
     }
 
-    public void setPos(float x, float y) {
-        this.origin_pos[0] = x;
-        this.origin_pos[1] = y;
+    public void moveIgnoreConstraints(float x, float y) {
+        for (float[] vert : this.vertices) {
+            vert[0] += x;
+            vert[1] += y;
+        }
+
+        this.origin_pos[0] += x;
+        this.origin_pos[1] += y;
+        this.mate_1[0] += x;
+        this.mate_1[1] += y;
+        this.mate_2[0] += x;
+        this.mate_2[1] += y;
+    }
+
+    public static float[] rotatePoint(float x, float y, float cx, float cy, float deg) {
+        float nx = (x-cx)*(float) Math.cos(Math.toRadians((double) deg)) - (y-cy)*(float) Math.sin(Math.toRadians((double) deg));
+        float ny = (y-cy)*(float) Math.cos(Math.toRadians((double) deg)) + (x-cx)*(float) Math.sin(Math.toRadians((double) deg));
+
+        return new float[]{nx+cx, ny+cy};
+    }
+
+    public void rotate(float deg) {
+        for (int i = 0; i < this.vertices.length; i++) {
+            this.vertices[i] = ConvexPolygon.rotatePoint(this.getVertX(i), this.getVertY(i), this.getMate1X(), this.getMate1Y(), deg);
+        }
+
+        this.mate_2 = ConvexPolygon.rotatePoint(this.getMate2X(), this.getMate2Y(), this.getMate1X(), this.getMate1Y(), deg);
+        this.origin_pos = ConvexPolygon.rotatePoint(this.origin_pos[0], this.origin_pos[1], this.getMate1X(), this.getMate1Y(), deg);
+
+        if (is_constrained_to) {
+            constrainedToThis.rotate(deg);
+            this.updateConstrainedToThis();
+        }
     }
 
     public void constrainTo(ConvexPolygon p) {
         this.constrainedTo = p;
-        this.setPos(p.getMate2X(), p.getMate2Y());
-        this.move(-this.mate_1[0], -this.mate_1[1]);
+        p.constrainedToThis = this;
+        p.is_constrained_to = true;
+        this.move((p.mate_2[0] - this.mate_1[0]), (p.mate_2[1] - this.mate_1[1]));
 
-        constrained = true;
+        this.is_constrained = true;
+    }
+
+    public void updateConstrainedToThis() {
+        constrainedToThis.moveIgnoreConstraints((this.mate_2[0] - constrainedToThis.mate_1[0]), (this.mate_2[1] - constrainedToThis.mate_1[1]));
+
+        if (constrainedToThis.is_constrained_to) {
+            constrainedToThis.updateConstrainedToThis();
+        }
     }
 
 
 
+
+
+
+
     // COLLISIONS MATH
+
+
+
+
 
 
 
@@ -210,5 +262,55 @@ class ConvexPolygon {
         }
 
         return false;
+    }
+
+
+
+
+
+
+
+    // GENERAL PURPOSE
+
+
+
+
+
+
+
+    public float[] getVert(int i) {
+        return new float[]{this.getVertX(i), this.getVertY(i)};
+    }
+;
+    public float getVertX(int i) {
+        return this.vertices[i][0];
+    }
+
+    public float getVertY(int i) {
+        return this.vertices[i][1];
+    }
+
+    public float[] getMate1() {
+        return new float[]{this.getMate1X(), this.getMate1Y()};
+    }
+
+    public float getMate1X() {
+        return this.mate_1[0];
+    }
+
+    public float getMate1Y() {
+        return this.mate_1[1];
+    }
+
+    public float[] getMate2() {
+        return new float[]{this.getMate2X(), this.getMate2Y()};
+    }
+
+    public float getMate2X() {
+        return this.mate_2[0];
+    }
+
+    public float getMate2Y() {
+        return this.mate_2[1];
     }
 }
