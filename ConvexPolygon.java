@@ -9,6 +9,8 @@ class ConvexPolygon {
     float[] mate_1;
     float[] mate_2;
 
+    float angle;
+
     boolean is_constrained;
     boolean is_constrained_to;
     ConvexPolygon constrainedTo;
@@ -24,6 +26,7 @@ class ConvexPolygon {
         this.origin_pos = origin_pos;
         this.is_colliding = false;
         this.is_in_bounds = true;
+        this.angle = 0;
 
         if (this.vertices != null) {
             for (float[] vert : this.vertices) {
@@ -58,7 +61,6 @@ class ConvexPolygon {
         }
 
         if (!is_colliding) {
-
             if (this.name == "limits" || !this.is_in_bounds) {
                 g.setColor(Color.BLUE);
             } else {
@@ -133,6 +135,8 @@ class ConvexPolygon {
     }
 
     public void rotate(float deg) {
+        this.angle += deg;
+
         for (int i = 0; i < this.vertices.length; i++) {
             this.vertices[i] = ConvexPolygon.rotatePoint(this.getVertX(i), this.getVertY(i), this.getMate1X(), this.getMate1Y(), deg);
         }
@@ -184,6 +188,13 @@ class ConvexPolygon {
         if (!p.is_colliding) {
             p.is_colliding = this.is_colliding;
         }
+
+        if (this.name == "1") {
+            if (this.angle % 360 < 15 || this.angle % 360 > 165) {
+                this.is_colliding = true;
+            }
+        }
+
         return this.is_colliding;
     }
 

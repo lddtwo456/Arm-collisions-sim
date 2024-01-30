@@ -121,7 +121,11 @@ public class Sim {
             }
         }
 
-        return j1.isWithin(limits) && j2.isWithin(limits) && end.isWithin(limits);
+        boolean j1_within = j1.isWithin(limits);
+        boolean j2_within = j2.isWithin(limits);
+        boolean end_within = end.isWithin(limits);
+
+        return j1_within && j2_within && end_within;
     }
 
     public boolean test3jAngles(float a, float b, float c) {
@@ -143,7 +147,20 @@ public class Sim {
         this.rotations = new float[]{a, b, c};
 
         this.update();
+
+        boolean end1 = this.checkCollision("end", "1");
+        boolean endroot = this.checkCollision("end", "root");
+        boolean endground = this.checkCollision("end", "ground");
+        boolean dosroot = this.checkCollision("2", "root");
+        boolean unoground = this.checkCollision("1", "ground");
+        boolean dosground = this.checkCollision("2", "ground");
+
+        boolean within = this.checkWithinBounds();
         
-        return this.checkCollision("end", "1") || this.checkCollision("end", "root") || this.checkCollision("end", "ground") || this.checkCollision("2", "root") || this.checkCollision("1", "ground") || !this.checkWithinBounds();
+        return end1 || endroot || endground || dosroot || dosground || unoground || !within;
+    }
+
+    public boolean test3jGlobalAngles(float a, float b, float c) {
+        return this.test3jAngles(a, b-a, c-b);
     }
 }
