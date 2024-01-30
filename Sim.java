@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Map;
 
 public class Sim {
     boolean run;
@@ -9,6 +11,9 @@ public class Sim {
     Win win;
 
     float[] rotations = new float[]{0, 0, 0};
+    Map<String, float[]> positions = new Hashtable<String, float[]>();
+
+    String current_position = "null";
 
     public Sim() {
         this.visualize = false;
@@ -162,5 +167,15 @@ public class Sim {
 
     public boolean test3jGlobalAngles(float a, float b, float c) {
         return this.test3jAngles(a, b-a, c-b);
+    }
+
+    public void addPosition(String name, float a, float b, float c) {
+        this.positions.put(name, new float[]{a, b, c});
+    }
+
+    public void testPosition(String name) {
+        this.current_position = name;
+        float[] position = this.positions.get(name);
+        this.test3jGlobalAngles(position[0], position[1], position[2]);
     }
 }

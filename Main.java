@@ -25,20 +25,23 @@ class Main {
 
         // tests a set of angles, angle between root and joint 1, joint 1 and joint 2, joint 2 and end effector respectively
         // assumes that joint 2 is fully passable, nothing is able to pass through root
-        System.out.println(sim.test3jGlobalAngles(75, 45, 0));
+        sim.addPosition("default", 150, 30, 0);
+        sim.addPosition("intaking", 110, 190, 45);
+        sim.addPosition("shooting", 140, 10, 0);
+        sim.testPosition("shooting");
 
-        
+        /*
         // test loop for fun
-        float a = 0;
-        float b = 0;
+        float a = 140;
+        float b = 10;
         float c = 0;
         
         while (true) {
-            a += 1f;
-            b += 1f;
-            c -= 3f;
+            a += 0f;
+            b += 0f;
+            c += 1;
 
-            System.out.println(sim.test3jGlobalAngles(a, 90, 90));
+            System.out.println(sim.test3jGlobalAngles(a, b, c));
 
             try {
                 TimeUnit.MILLISECONDS.sleep(10);
@@ -46,5 +49,6 @@ class Main {
                 e.printStackTrace();
             }
         }
+        */
     }
 }
