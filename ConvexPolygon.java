@@ -80,17 +80,7 @@ class ConvexPolygon {
     }
 
 
-
-
-
-
-
     // MOVEMENT/CONSTRAINTS THINGS
-
-
-
-
-
 
 
     public void move(float x, float y) {
@@ -168,17 +158,7 @@ class ConvexPolygon {
     }
 
 
-
-
-
-
-
     // COLLISIONS MATH
-
-
-
-
-
 
 
     public boolean isColliding(ConvexPolygon p) {
@@ -293,17 +273,7 @@ class ConvexPolygon {
     }
 
 
-
-
-
-
-
     // GENERAL PURPOSE
-
-
-
-
-
 
 
     public float[] getVert(int i) {

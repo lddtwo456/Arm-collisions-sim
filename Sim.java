@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -8,7 +7,7 @@ public class Sim {
     boolean visualize;
 
     float scale;
-    ArrayList<ConvexPolygon> polygons;
+    Map<String, ConvexPolygon> polygons = new Hashtable<String, ConvexPolygon>();
     Win win;
 
     float[] rotations = new float[]{0, 0, 0};
@@ -18,21 +17,16 @@ public class Sim {
 
     public Sim() {
         this.visualize = false;
-        this.polygons = new ArrayList<ConvexPolygon>();
+
     }
 
     public void init() {
-        ConvexPolygon root = new ConvexPolygon("null", null, null, null, null);
-        for (ConvexPolygon p : this.polygons) {
-            if (p.name == "root") {
-                root = p;
-            }
-        }
+        ConvexPolygon root = this.polygons.get("root");
 
         // extension limits
-        this.polygons.add(new ConvexPolygon("limits", new float[][]{{-8.625f, -0.65f}, {43.875f, -0.65f}, {43.875f, 48f}, {-8.625f, 48f}}, root.origin_pos, new float[]{0, 0}, new float[]{0, 0}));
+        this.polygons.put("limits", new ConvexPolygon("limits", new float[][]{{-8.625f, -0.65f}, {43.875f, -0.65f}, {43.875f, 48f}, {-8.625f, 48f}}, root.origin_pos, new float[]{0, 0}, new float[]{0, 0}));
         // ground
-        this.polygons.add(new ConvexPolygon("ground", new float[][]{{-200f, -0.625f}, {200f, -0.625f}, {200f, -100f}, {-200f, -100f}}, new float[]{root.origin_pos[0] - 50, root.origin_pos[1]}, new float[]{0, 0}, new float[]{0, 0}));
+        this.polygons.put("ground", new ConvexPolygon("ground", new float[][]{{-200f, -0.625f}, {200f, -0.625f}, {200f, -100f}, {-200f, -100f}}, new float[]{root.origin_pos[0] - 50, root.origin_pos[1]}, new float[]{0, 0}, new float[]{0, 0}));
     }
 
     public void update() {
@@ -52,20 +46,12 @@ public class Sim {
     }
 
     public void addPolygon(String name, float[][] vertices, float[] origin_pos, float[] mate_1, float[] mate_2) {
-        this.polygons.add(new ConvexPolygon(name, vertices, origin_pos, mate_1, mate_2));
+        this.polygons.put(name, new ConvexPolygon(name, vertices, origin_pos, mate_1, mate_2));
     }
 
     public void constrain(String name1, String name2) {
-        ConvexPolygon p1 = new ConvexPolygon("null", null, null, null, null);
-        ConvexPolygon p2 = new ConvexPolygon("null", null, null, null, null);
-
-        for (ConvexPolygon p : this.polygons) {
-            if (p.name == name1) {
-                p1 = p;
-            } else if (p.name == name2) {
-                p2 = p;
-            }
-        }
+        ConvexPolygon p1 = this.polygons.get(name1);
+        ConvexPolygon p2 = this.polygons.get(name2);
 
         try {
             p1.constrainTo(p2);
@@ -75,80 +61,40 @@ public class Sim {
     }
 
     public void movePolygon(String name, float x, float y) {
-        for (ConvexPolygon p : this.polygons) {
-            if (p.name == name) {
-                p.move(x, y);
-            }
-        }
+        this.polygons.get(name).move(x, y);
     }
 
     public void rotatePolygon(String name, float deg) {
-        for (ConvexPolygon p : this.polygons) {
-            if (p.name == name) {
-                p.rotate(deg);
-            }
-        }
+        this.polygons.get(name).rotate(deg);
     }
 
     public boolean checkCollision(String name1, String name2) {
-        ConvexPolygon p1 = new ConvexPolygon("null", null, null, null, null);
-        ConvexPolygon p2 = new ConvexPolygon("null", null, null, null, null);
-
-        for (ConvexPolygon p : this.polygons) {
-            if (p.name == name1) {
-                p1 = p;
-            } else if (p.name == name2) {
-                p2 = p;
-            }
-        }
-
-        if (p1.name != "null" && p2.name != "null") {
-            return p1.isColliding(p2);
-        } else {
-            System.out.println("could not find polygons");
-            return false;
-        }
+        return this.polygons.get(name1).isColliding(this.polygons.get(name2));
     }
 
     public boolean checkWithinBounds() {
-        ConvexPolygon end = new ConvexPolygon("null", null, null, null, null);
-        ConvexPolygon j2 = new ConvexPolygon("null", null, null, null, null);
-        ConvexPolygon j1 = new ConvexPolygon("null", null, null, null, null);
-        ConvexPolygon limits = new ConvexPolygon("null", null, null, null, null);
-        for (ConvexPolygon p : this.polygons) {
-            if (p.name == "1") {
-                j1 = p;
-            } else if (p.name == "2") {
-                j2 = p;
-            } else if (p.name == "end") {
-                end = p;
-            } else if (p.name == "limits") {
-                limits = p;
-            }
-        }
-
-        boolean j1_within = j1.isWithin(limits);
-        boolean j2_within = j2.isWithin(limits);
-        boolean end_within = end.isWithin(limits);
+        boolean j1_within = this.polygons.get("1").isWithin(this.polygons.get("limits"));
+        boolean j2_within = this.polygons.get("2").isWithin(this.polygons.get("limits"));
+        boolean end_within = this.polygons.get("end").isWithin(this.polygons.get("limits"));
 
         return j1_within && j2_within && end_within;
     }
 
     public boolean test3jAngles(float a, float b, float c) {
-        for (ConvexPolygon p : this.polygons) {
-            p.is_colliding = false;
-            p.is_in_bounds = true;
-            if (p.name == "1") {
-                p.rotate(-this.rotations[0]);
-                p.rotate(a);
-            } else if (p.name == "2") {
-                p.rotate(-this.rotations[1]);
-                p.rotate(b);
-            } else if (p.name == "end") {
-                p.rotate(-this.rotations[2]);
-                p.rotate(c);
-            }
-        }
+        this.polygons.get("1").is_colliding = false;
+        this.polygons.get("1").is_in_bounds = true;
+        this.polygons.get("1").rotate(-this.rotations[0]);
+        this.polygons.get("1").rotate(a);
+
+        this.polygons.get("2").is_colliding = false;
+        this.polygons.get("2").is_in_bounds = true;
+        this.polygons.get("2").rotate(-this.rotations[1]);
+        this.polygons.get("2").rotate(b);
+
+        this.polygons.get("end").is_colliding = false;
+        this.polygons.get("end").is_in_bounds = true;
+        this.polygons.get("end").rotate(-this.rotations[2]);
+        this.polygons.get("end").rotate(c);
 
         this.rotations = new float[]{a, b, c};
 
@@ -303,9 +249,4 @@ public class Sim {
     public float getGlobalC(String position) {
         return this.positions.get(position)[2];
     }
-
-
-    // POSITION GETS
-
-
 }

@@ -1,7 +1,7 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.util.ArrayList;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -12,7 +12,7 @@ public class Win extends JFrame {
 
     float scale;
 
-    public Win(int w, int h, float scale, ArrayList<ConvexPolygon> polygons) {
+    public Win(int w, int h, float scale, Map<String, ConvexPolygon> polygons) {
         this.w = w;
         this.h = h;
 
@@ -27,10 +27,10 @@ public class Win extends JFrame {
     }
 
     class DrawWin extends JPanel {
-        ArrayList<ConvexPolygon> polygons;
+        Map<String, ConvexPolygon> polygons;
         float scale;
 
-        public DrawWin(ArrayList<ConvexPolygon> polygons, float scale) {
+        public DrawWin(Map<String, ConvexPolygon> polygons, float scale) {
             this.polygons = polygons;
             this.scale = scale;
         }
@@ -40,8 +40,8 @@ public class Win extends JFrame {
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, this.getWidth(), this.getHeight());
 
-            for (ConvexPolygon polygon : this.polygons) {
-                polygon.draw(g, true, this.scale, this.getWidth(), this.getHeight());
+            for (Map.Entry<String, ConvexPolygon> entry : this.polygons.entrySet()) {
+                entry.getValue().draw(g, true, this.scale, this.getWidth(), this.getHeight());
             }
         }
     }
