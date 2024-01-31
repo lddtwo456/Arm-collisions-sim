@@ -170,6 +170,10 @@ public class Sim {
         return this.test3jAngles(a, b-a, c-b);
     }
 
+
+    // POSITIONS
+
+
     public void addPosition(String name, float a, float b, float c) {
         this.positions.put(name, new float[]{a, b, c});
     }
@@ -210,6 +214,9 @@ public class Sim {
         for (int i = 0; i < steps; i++) {
             if (!this.test3jGlobalAngles(start_a+((i*a_dist)/steps), start_b+((i*b_dist)/steps), start_c+((i*c_dist)/steps))) {
                 checks[i] = new float[]{start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps)};
+            } else {
+                System.out.println("COLLISION");
+                // do fix if this ever happens
             }
 
             if (visualized) {
@@ -222,11 +229,27 @@ public class Sim {
         }
         if (!this.test3jGlobalAngles(this.getGlobalA(target_position), this.getGlobalB(target_position), this.getGlobalC(target_position))) {
             checks[checks.length-1] = new float[]{this.getGlobalA(target_position), this.getGlobalB(target_position), this.getGlobalC(target_position)};
+        } else {
+            System.out.println("COLLISION");
+            // do fix if this ever happens
         }
 
         this.current_position = target_position;
 
         return checks;
+    }
+
+
+    // TARGETING
+
+
+    public float getAimAngle(float d, float h) {
+        if (this.current_position == "shooting") {
+
+        } else {
+            System.out.println("CANNOT TARGET RIGHT NOW");
+            return 0/0;
+        }
     }
 
 
@@ -238,11 +261,11 @@ public class Sim {
     }
 
     public float getB() {
-        return this.positions.get(this.current_position)[1];
+        return this.positions.get(this.current_position)[1]+this.getA();
     }
 
     public float getC() {
-        return this.positions.get(this.current_position)[2];
+        return this.positions.get(this.current_position)[2]+this.getB();
     }
 
     public float getGlobalA() {
@@ -262,11 +285,11 @@ public class Sim {
     }
 
     public float getB(String position) {
-        return this.positions.get(position)[1];
+        return this.positions.get(position)[1]+this.getA(position);
     }
 
     public float getC(String position) {
-        return this.positions.get(position)[2];
+        return this.positions.get(position)[2]+this.getB(position);
     }
 
     public float getGlobalA(String position) {
@@ -280,4 +303,9 @@ public class Sim {
     public float getGlobalC(String position) {
         return this.positions.get(position)[2];
     }
+
+
+    // POSITION GETS
+
+
 }

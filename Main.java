@@ -1,5 +1,3 @@
-import java.util.concurrent.TimeUnit;
-
 class Main {
     public static void main(String[] args) {
         Sim sim = new Sim();
@@ -28,32 +26,21 @@ class Main {
         sim.addPosition("default", 150, 30, 0);
         sim.addPosition("intaking", 110, 190, 45);
         sim.addPosition("shooting", 140, 10, 0);
-        sim.addPosition("amp", 80, 80, -70);
+        sim.addPosition("amp", 80, 80, -60);
+        sim.addPosition("broken", 0, 0, 0);
         sim.testPosition("default");
+
+        // what would really be used
+        sim.generatePath("intaking", 10, false);
+        sim.generatePath("shooting", 10, false);
+        sim.generatePath("amp", 10, false);
+        sim.generatePath("default", 10, false);
+
+        // for cool
         sim.generatePath("intaking", 180, true);
         sim.generatePath("shooting", 180, true);
         sim.generatePath("amp", 180, true);
         sim.generatePath("default", 180, true);
-
-        /*
-        // test loop for fun
-        float a = 140;
-        float b = 10;
-        float c = 0;
-        
-        while (true) {
-            a += 0f;
-            b += 0f;
-            c += 1;
-
-            System.out.println(sim.test3jGlobalAngles(a, b, c));
-
-            try {
-                TimeUnit.MILLISECONDS.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        */
+        sim.generatePath("broken", 180, true);
     }
 }
