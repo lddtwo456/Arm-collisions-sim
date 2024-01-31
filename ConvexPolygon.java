@@ -140,6 +140,22 @@ class ConvexPolygon {
         }
     }
 
+    public void rotateAroundMate2(float deg) {
+        this.angle += deg;
+
+        for (int i = 0; i < this.vertices.length; i++) {
+            this.vertices[i] = ConvexPolygon.rotatePoint(this.getVertX(i), this.getVertY(i), this.getMate2X(), this.getMate2Y(), deg);
+        }
+
+        this.mate_1 = ConvexPolygon.rotatePoint(this.getMate1X(), this.getMate1Y(), this.getMate2X(), this.getMate2Y(), deg);
+        this.origin_pos = ConvexPolygon.rotatePoint(this.origin_pos[0], this.origin_pos[1], this.getMate2X(), this.getMate2Y(), deg);
+
+        if (is_constrained_to) {
+            constrainedToThis.rotate(deg);
+            this.updateConstrainedToThis();
+        }
+    }
+
     public void constrainTo(ConvexPolygon p) {
         this.constrainedTo = p;
         p.constrainedToThis = this;

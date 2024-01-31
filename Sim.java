@@ -13,18 +13,19 @@ public class Sim {
     float[] rotations = new float[]{0, 0, 0};
     Map<String, float[]> positions = new Hashtable<String, float[]>();
 
-    String current_position = "null";
+    String current_test_position = "null";
+
+    float[] target_position = new float[]{0,0};
 
     public Sim() {
         this.visualize = false;
-
     }
 
     public void init() {
         ConvexPolygon root = this.polygons.get("root");
 
         // extension limits
-        this.polygons.put("limits", new ConvexPolygon("limits", new float[][]{{-8.625f, -0.65f}, {43.875f, -0.65f}, {43.875f, 48f}, {-8.625f, 48f}}, root.origin_pos, new float[]{0, 0}, new float[]{0, 0}));
+        this.polygons.put("limits", new ConvexPolygon("limits", new float[][]{{-8.625f, 0f}, {43.875f, 0f}, {43.875f, 48f}, {-8.625f, 48f}}, root.origin_pos, new float[]{0, 0}, new float[]{0, 0}));
         // ground
         this.polygons.put("ground", new ConvexPolygon("ground", new float[][]{{-200f, -0.625f}, {200f, -0.625f}, {200f, -100f}, {-200f, -100f}}, new float[]{root.origin_pos[0] - 50, root.origin_pos[1]}, new float[]{0, 0}, new float[]{0, 0}));
     }
@@ -38,7 +39,7 @@ public class Sim {
     public void createWindow(int w, int h, float scale) {
         this.scale = scale;
         visualize = true;
-        win = new Win(w+16, h+38, this.scale, this.polygons);
+        win = new Win(w+16, h+38, this.scale, this.polygons, this.target_position);
     }
 
     public void setScale(float scale) {
@@ -125,7 +126,7 @@ public class Sim {
     }
 
     public void testPosition(String name) {
-        this.current_position = name;
+        this.current_test_position = name;
         float[] position = this.positions.get(name);
         this.test3jGlobalAngles(position[0], position[1], position[2]);
     }
@@ -147,7 +148,7 @@ public class Sim {
         float start_b = this.getGlobalB();
         float start_c = this.getGlobalC();
 
-        System.out.println(start_a+" "+start_b+" "+start_c);
+        System.out.println("\n"+start_a+" "+start_b+" "+start_c);
         System.out.println(this.getGlobalA(target_position)+" "+this.getGlobalB(target_position)+" "+this.getGlobalC(target_position));
 
         float a_dist = this.getShortestAngularDistance(start_a, this.getGlobalA(target_position));
@@ -156,7 +157,7 @@ public class Sim {
 
         System.out.println(a_dist+" "+b_dist+" "+c_dist);
 
-        this.current_position = "null";
+        this.current_test_position = "null";
         for (int i = 0; i < steps; i++) {
             if (!this.test3jGlobalAngles(start_a+((i*a_dist)/steps), start_b+((i*b_dist)/steps), start_c+((i*c_dist)/steps))) {
                 checks[i] = new float[]{start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps)};
@@ -167,7 +168,7 @@ public class Sim {
 
             if (visualized) {
                 try {
-                    TimeUnit.MILLISECONDS.sleep(10);
+                    TimeUnit.MILLISECONDS.sleep(5);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -180,22 +181,41 @@ public class Sim {
             // do fix if this ever happens
         }
 
-        this.current_position = target_position;
+        this.current_test_position = target_position;
 
         return checks;
+    }
+
+    public void moveTo(String position) {
+        this.generatePath(position, 180, true);
     }
 
 
     // TARGETING
 
 
-    public float getAimAngle(float d, float h) {
-        if (this.current_position == "shooting") {
+    public void ikAim(float d, float h) {
+        this.target_position[0] = d;
+        this.target_position[1] = h;
+        win.repaint();
 
-        } else {
+        this.polygons.get("end").rotateAroundMate2(this.getIkAimAngle(d, h));
+    }
+
+    public float getIkAimAngle(float d, float h) {
+        if (this.current_test_position != "shooting") {
             System.out.println("CANNOT TARGET RIGHT NOW");
-            return 0/0;
+            System.out.println("moving...");
+            this.moveTo("shooting");
+            System.out.println("moved!");
         }
+
+        d = d - this.polygons.get("end").getMate2X();
+        h = h - this.polygons.get("end").getMate2Y();
+
+        float theta = (float) Math.toDegrees(Math.atan((double) h/d));
+
+        return theta;
     }
 
 
@@ -203,27 +223,27 @@ public class Sim {
 
 
     public float getA() {
-        return this.positions.get(this.current_position)[0];
+        return this.positions.get(this.current_test_position)[0];
     }
 
     public float getB() {
-        return this.positions.get(this.current_position)[1]+this.getA();
+        return this.positions.get(this.current_test_position)[1]+this.getA();
     }
 
     public float getC() {
-        return this.positions.get(this.current_position)[2]+this.getB();
+        return this.positions.get(this.current_test_position)[2]+this.getB();
     }
 
     public float getGlobalA() {
-        return this.positions.get(this.current_position)[0];
+        return this.positions.get(this.current_test_position)[0];
     }
 
     public float getGlobalB() {
-        return this.positions.get(this.current_position)[1];
+        return this.positions.get(this.current_test_position)[1];
     }
 
     public float getGlobalC() {
-        return this.positions.get(this.current_position)[2];
+        return this.positions.get(this.current_test_position)[2];
     }
 
     public float getA(String position) {
