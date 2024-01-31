@@ -28,7 +28,12 @@ class Main {
         sim.addPosition("default", 150, 30, 0);
         sim.addPosition("intaking", 110, 190, 45);
         sim.addPosition("shooting", 140, 10, 0);
-        sim.testPosition("shooting");
+        sim.addPosition("amp", 80, 80, -70);
+        sim.testPosition("default");
+        sim.generatePath("intaking", 180, true);
+        sim.generatePath("shooting", 180, true);
+        sim.generatePath("amp", 180, true);
+        sim.generatePath("default", 180, true);
 
         /*
         // test loop for fun

@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class Sim {
     boolean run;
@@ -177,5 +178,106 @@ public class Sim {
         this.current_position = name;
         float[] position = this.positions.get(name);
         this.test3jGlobalAngles(position[0], position[1], position[2]);
+    }
+
+    public float getShortestAngularDistance(float a, float b) {
+        float diff = b - a;
+
+        if (Math.abs((double) diff) <= 180) {
+            return diff;
+        } else {
+            return diff - Math.copySign(360, diff);
+        }
+    }
+
+    public float[][] generatePath(String target_position, int steps, boolean visualized) {
+        float[][] checks = new float[steps+1][3];
+
+        float start_a = this.getGlobalA();
+        float start_b = this.getGlobalB();
+        float start_c = this.getGlobalC();
+
+        System.out.println(start_a+" "+start_b+" "+start_c);
+        System.out.println(this.getGlobalA(target_position)+" "+this.getGlobalB(target_position)+" "+this.getGlobalC(target_position));
+
+        float a_dist = this.getShortestAngularDistance(start_a, this.getGlobalA(target_position));
+        float b_dist = this.getShortestAngularDistance(start_b, this.getGlobalB(target_position));
+        float c_dist = this.getShortestAngularDistance(start_c, this.getGlobalC(target_position));
+
+        System.out.println(a_dist+" "+b_dist+" "+c_dist);
+
+        this.current_position = "null";
+        for (int i = 0; i < steps; i++) {
+            if (!this.test3jGlobalAngles(start_a+((i*a_dist)/steps), start_b+((i*b_dist)/steps), start_c+((i*c_dist)/steps))) {
+                checks[i] = new float[]{start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps)};
+            }
+
+            if (visualized) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (!this.test3jGlobalAngles(this.getGlobalA(target_position), this.getGlobalB(target_position), this.getGlobalC(target_position))) {
+            checks[checks.length-1] = new float[]{this.getGlobalA(target_position), this.getGlobalB(target_position), this.getGlobalC(target_position)};
+        }
+
+        this.current_position = target_position;
+
+        return checks;
+    }
+
+
+    // ANGLE GETS
+
+
+    public float getA() {
+        return this.positions.get(this.current_position)[0];
+    }
+
+    public float getB() {
+        return this.positions.get(this.current_position)[1];
+    }
+
+    public float getC() {
+        return this.positions.get(this.current_position)[2];
+    }
+
+    public float getGlobalA() {
+        return this.positions.get(this.current_position)[0];
+    }
+
+    public float getGlobalB() {
+        return this.positions.get(this.current_position)[1];
+    }
+
+    public float getGlobalC() {
+        return this.positions.get(this.current_position)[2];
+    }
+
+    public float getA(String position) {
+        return this.positions.get(position)[0];
+    }
+
+    public float getB(String position) {
+        return this.positions.get(position)[1];
+    }
+
+    public float getC(String position) {
+        return this.positions.get(position)[2];
+    }
+
+    public float getGlobalA(String position) {
+        return this.positions.get(position)[0];
+    }
+
+    public float getGlobalB(String position) {
+        return this.positions.get(position)[1];
+    }
+
+    public float getGlobalC(String position) {
+        return this.positions.get(position)[2];
     }
 }
