@@ -3,13 +3,13 @@ import java.awt.Graphics;
 import java.awt.Polygon;
 
 class ConvexPolygon {
-    float[][] vertices;
+    double[][] vertices;
 
-    float[] origin_pos;
-    float[] mate_1;
-    float[] mate_2;
+    double[] origin_pos;
+    double[] mate_1;
+    double[] mate_2;
 
-    float angle;
+    double angle;
 
     boolean is_constrained;
     boolean is_constrained_to;
@@ -21,7 +21,7 @@ class ConvexPolygon {
 
     String name;
 
-    public ConvexPolygon(String name, float[][] vertices, float[] origin_pos, float[] mate_1, float[] mate_2) {
+    public ConvexPolygon(String name, double[][] vertices, double[] origin_pos, double[] mate_1, double[] mate_2) {
         this.vertices = vertices;
         this.origin_pos = origin_pos;
         this.is_colliding = false;
@@ -29,7 +29,7 @@ class ConvexPolygon {
         this.angle = 0;
 
         if (this.vertices != null) {
-            for (float[] vert : this.vertices) {
+            for (double[] vert : this.vertices) {
                 vert[0] += this.origin_pos[0];
                 vert[1] += this.origin_pos[1];
             }
@@ -51,13 +51,13 @@ class ConvexPolygon {
         }
     }
 
-    public void draw(Graphics g, boolean draw_mates, float scale, float screen_width, float screen_height) {
+    public void draw(Graphics g, boolean draw_mates, double scale, double screen_width, double screen_height) {
         int[] x_points = new int[this.vertices.length];
         int[] y_points = new int[this.vertices.length];
 
         for (int i = 0; i < this.vertices.length; i++) {
-            x_points[i] = Math.round(this.getVertX(i) * scale + (screen_width/2));
-            y_points[i] = Math.round(-this.getVertY(i) * scale + (screen_height/2));
+            x_points[i] = (int) Math.round(this.getVertX(i) * scale + (screen_width/2));
+            y_points[i] = (int) Math.round(-this.getVertY(i) * scale + (screen_height/2));
         }
 
         if (!is_colliding) {
@@ -74,8 +74,8 @@ class ConvexPolygon {
 
         if (draw_mates) {
             g.setColor(Color.RED);
-            g.fillOval(Math.round(this.getMate1X() * scale + (screen_width/2)), Math.round(-this.getMate1Y() * scale + (screen_height/2)), 5, 5);
-            g.fillOval(Math.round(this.getMate2X() * scale + (screen_width/2)), Math.round(-this.getMate2Y() * scale + (screen_height/2)), 5, 5);
+            g.fillOval((int) Math.round(this.getMate1X() * scale + (screen_width/2)), (int) Math.round(-this.getMate1Y() * scale + (screen_height/2)), 5, 5);
+            g.fillOval((int) Math.round(this.getMate2X() * scale + (screen_width/2)), (int) Math.round(-this.getMate2Y() * scale + (screen_height/2)), 5, 5);
         }
     }
 
@@ -83,9 +83,9 @@ class ConvexPolygon {
     // MOVEMENT/CONSTRAINTS THINGS
 
 
-    public void move(float x, float y) {
+    public void move(double x, double y) {
         if (!is_constrained) {
-            for (float[] vert : this.vertices) {
+            for (double[] vert : this.vertices) {
                 vert[0] += x;
                 vert[1] += y;
             }
@@ -103,8 +103,8 @@ class ConvexPolygon {
         }
     }
 
-    public void moveIgnoreConstraints(float x, float y) {
-        for (float[] vert : this.vertices) {
+    public void moveIgnoreConstraints(double x, double y) {
+        for (double[] vert : this.vertices) {
             vert[0] += x;
             vert[1] += y;
         }
@@ -117,14 +117,14 @@ class ConvexPolygon {
         this.mate_2[1] += y;
     }
 
-    public static float[] rotatePoint(float x, float y, float cx, float cy, float deg) {
-        float nx = (x-cx)*(float) Math.cos(Math.toRadians((double) deg)) - (y-cy)*(float) Math.sin(Math.toRadians((double) deg));
-        float ny = (y-cy)*(float) Math.cos(Math.toRadians((double) deg)) + (x-cx)*(float) Math.sin(Math.toRadians((double) deg));
+    public static double[] rotatePoint(double x, double y, double cx, double cy, double deg) {
+        double nx = (x-cx)*Math.cos(Math.toRadians(deg)) - (y-cy)*Math.sin(Math.toRadians(deg));
+        double ny = (y-cy)*Math.cos(Math.toRadians(deg)) + (x-cx)*Math.sin(Math.toRadians(deg));
 
-        return new float[]{nx+cx, ny+cy};
+        return new double[]{nx+cx, ny+cy};
     }
 
-    public void rotate(float deg) {
+    public void rotate(double deg) {
         this.angle += deg;
 
         for (int i = 0; i < this.vertices.length; i++) {
@@ -140,7 +140,7 @@ class ConvexPolygon {
         }
     }
 
-    public void rotateAroundMate2(float deg) {
+    public void rotateAroundMate2(double deg) {
         this.angle += deg;
 
         for (int i = 0; i < this.vertices.length; i++) {
@@ -202,16 +202,16 @@ class ConvexPolygon {
     public boolean isOverlapping(ConvexPolygon p, boolean fully) {
         for (int i = 0; i < this.vertices.length; i++) {
             // get perpendicular line
-            float[][] l;
+            double[][] l;
             try {
-                l = ConvexPolygon.getPerpendicular(new float[][]{{this.getVertX(i), this.getVertY(i)}, {this.getVertX(i+1), this.getVertY(i+1)}});
+                l = ConvexPolygon.getPerpendicular(new double[][]{{this.getVertX(i), this.getVertY(i)}, {this.getVertX(i+1), this.getVertY(i+1)}});
             } catch (Exception e) {
-                l = ConvexPolygon.getPerpendicular(new float[][]{{this.getVertX(i), this.getVertY(i)}, {this.getVertX(0), this.getVertY(0)}});
+                l = ConvexPolygon.getPerpendicular(new double[][]{{this.getVertX(i), this.getVertY(i)}, {this.getVertX(0), this.getVertY(0)}});
             }
 
             // get projected lines
-            float[] this_projection = ConvexPolygon.getBounds(this.getTOnLine(l));
-            float[] p_projection = ConvexPolygon.getBounds(p.getTOnLine(l));
+            double[] this_projection = ConvexPolygon.getBounds(this.getTOnLine(l));
+            double[] p_projection = ConvexPolygon.getBounds(p.getTOnLine(l));
 
             if (fully) {
                 if (!ConvexPolygon.tIsFullyWithin(this_projection, p_projection)) {
@@ -227,20 +227,20 @@ class ConvexPolygon {
         return true;
     }
 
-    public static float[][] getPerpendicular(float[][] l) {
-        float[] midpoint = new float[]{(l[0][0]+l[1][0])/2, (l[0][1]+l[1][1])/2};
+    public static double[][] getPerpendicular(double[][] l) {
+        double[] midpoint = new double[]{(l[0][0]+l[1][0])/2, (l[0][1]+l[1][1])/2};
 
-        return (new float[][]{{-1*(l[0][1] - midpoint[1]) + midpoint[1], l[0][0]}, {-1*(l[1][1] - midpoint[1]) + midpoint[1], l[1][0]}});
+        return (new double[][]{{-1*(l[0][1] - midpoint[1]) + midpoint[1], l[0][0]}, {-1*(l[1][1] - midpoint[1]) + midpoint[1], l[1][0]}});
     }
 
-    public float[] getTOnLine(float[][] l) {
-        float d_sqr = (l[0][0]-l[1][0])*(l[0][0]-l[1][0]) + (l[0][1]-l[1][1])*(l[0][1]-l[1][1]);
+    public double[] getTOnLine(double[][] l) {
+        double d_sqr = (l[0][0]-l[1][0])*(l[0][0]-l[1][0]) + (l[0][1]-l[1][1])*(l[0][1]-l[1][1]);
 
         // min, max
-        float[] projection_t = new float[this.vertices.length];
+        double[] projection_t = new double[this.vertices.length];
 
         for (int i = 0; i < this.vertices.length; i++) {
-            float[] vert = this.getVert(i);
+            double[] vert = this.getVert(i);
             
             projection_t[i] = ((vert[0] - l[0][0]) * (l[1][0] - l[0][0])) / d_sqr + ((vert[1] - l[0][1]) * (l[1][1] - l[0][1])) / d_sqr;
         }
@@ -248,12 +248,12 @@ class ConvexPolygon {
         return projection_t;
     }
 
-    public static float[] getBounds(float[] l) {
+    public static double[] getBounds(double[] l) {
         // min max
-        float[] bounds = new float[]{l[0], l[0]};
+        double[] bounds = new double[]{l[0], l[0]};
 
         // sort by t
-        for (float t : l) {
+        for (double t : l) {
             if (t > bounds[1]) {
                 bounds[1] = t;
             } if (t < bounds[0]) {
@@ -264,7 +264,7 @@ class ConvexPolygon {
         return bounds;
     }
 
-    public static boolean tIsOverlapping(float[] l1, float[] l2) {
+    public static boolean tIsOverlapping(double[] l1, double[] l2) {
         if (l1[0] <= l2[1] && l1[0] >= l2[0]) {
             return true;
         } if (l1[1] <= l2[1] && l1[1] >= l2[0]) {
@@ -278,7 +278,7 @@ class ConvexPolygon {
         return false;
     }
 
-    public static boolean tIsFullyWithin(float[] l1, float[] l2) {
+    public static boolean tIsFullyWithin(double[] l1, double[] l2) {
         if ((l1[0] <= l2[1] && l1[0] >= l2[0]) && (l1[1] <= l2[1] && l1[1] >= l2[0])) {
             return true;
         } if ((l2[0] <= l1[1] && l2[0] >= l1[0]) && (l2[1] <= l1[1] && l2[1] >= l1[0])) {
@@ -292,39 +292,39 @@ class ConvexPolygon {
     // GENERAL PURPOSE
 
 
-    public float[] getVert(int i) {
-        return new float[]{this.getVertX(i), this.getVertY(i)};
+    public double[] getVert(int i) {
+        return new double[]{this.getVertX(i), this.getVertY(i)};
     }
 ;
-    public float getVertX(int i) {
+    public double getVertX(int i) {
         return this.vertices[i][0];
     }
 
-    public float getVertY(int i) {
+    public double getVertY(int i) {
         return this.vertices[i][1];
     }
 
-    public float[] getMate1() {
-        return new float[]{this.getMate1X(), this.getMate1Y()};
+    public double[] getMate1() {
+        return new double[]{this.getMate1X(), this.getMate1Y()};
     }
 
-    public float getMate1X() {
+    public double getMate1X() {
         return this.mate_1[0];
     }
 
-    public float getMate1Y() {
+    public double getMate1Y() {
         return this.mate_1[1];
     }
 
-    public float[] getMate2() {
-        return new float[]{this.getMate2X(), this.getMate2Y()};
+    public double[] getMate2() {
+        return new double[]{this.getMate2X(), this.getMate2Y()};
     }
 
-    public float getMate2X() {
+    public double getMate2X() {
         return this.mate_2[0];
     }
 
-    public float getMate2Y() {
+    public double getMate2Y() {
         return this.mate_2[1];
     }
 }

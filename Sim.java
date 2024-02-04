@@ -6,16 +6,16 @@ public class Sim {
     boolean run;
     boolean visualize;
 
-    float scale;
+    double scale;
     Map<String, ConvexPolygon> polygons = new Hashtable<String, ConvexPolygon>();
     Win win;
 
-    float[] rotations = new float[]{0, 0, 0};
-    Map<String, float[]> positions = new Hashtable<String, float[]>();
+    double[] rotations = new double[]{0, 0, 0};
+    Map<String, double[]> positions = new Hashtable<String, double[]>();
 
     String current_test_position = "null";
 
-    float[] target_position = new float[]{0,0};
+    double[] target_position = new double[]{0,0};
 
     public Sim() {
         this.visualize = false;
@@ -25,9 +25,9 @@ public class Sim {
         ConvexPolygon root = this.polygons.get("root");
 
         // extension limits
-        this.polygons.put("limits", new ConvexPolygon("limits", new float[][]{{-8.625f, 0f}, {43.875f, 0f}, {43.875f, 48f}, {-8.625f, 48f}}, root.origin_pos, new float[]{0, 0}, new float[]{0, 0}));
+        this.polygons.put("limits", new ConvexPolygon("limits", new double[][]{{-8.625f, 0f}, {43.875f, 0f}, {43.875f, 48f}, {-8.625f, 48f}}, root.origin_pos, new double[]{0, 0}, new double[]{0, 0}));
         // ground
-        this.polygons.put("ground", new ConvexPolygon("ground", new float[][]{{-200f, -0.625f}, {200f, -0.625f}, {200f, -100f}, {-200f, -100f}}, new float[]{root.origin_pos[0] - 50, root.origin_pos[1]}, new float[]{0, 0}, new float[]{0, 0}));
+        this.polygons.put("ground", new ConvexPolygon("ground", new double[][]{{-200f, -0.625f}, {200f, -0.625f}, {200f, -100f}, {-200f, -100f}}, new double[]{root.origin_pos[0] - 50, root.origin_pos[1]}, new double[]{0, 0}, new double[]{0, 0}));
     }
 
     public void update() {
@@ -36,17 +36,17 @@ public class Sim {
         }
     }
 
-    public void createWindow(int w, int h, float scale) {
+    public void createWindow(int w, int h, double scale) {
         this.scale = scale;
         visualize = true;
         win = new Win(w+16, h+38, this.scale, this.polygons, this.target_position);
     }
 
-    public void setScale(float scale) {
+    public void setScale(double scale) {
         this.scale = scale;
     }
 
-    public void addPolygon(String name, float[][] vertices, float[] origin_pos, float[] mate_1, float[] mate_2) {
+    public void addPolygon(String name, double[][] vertices, double[] origin_pos, double[] mate_1, double[] mate_2) {
         this.polygons.put(name, new ConvexPolygon(name, vertices, origin_pos, mate_1, mate_2));
     }
 
@@ -61,11 +61,11 @@ public class Sim {
         }
     }
 
-    public void movePolygon(String name, float x, float y) {
+    public void movePolygon(String name, double x, double y) {
         this.polygons.get(name).move(x, y);
     }
 
-    public void rotatePolygon(String name, float deg) {
+    public void rotatePolygon(String name, double deg) {
         this.polygons.get(name).rotate(deg);
     }
 
@@ -81,7 +81,7 @@ public class Sim {
         return j1_within && j2_within && end_within;
     }
 
-    public boolean test3jAngles(float a, float b, float c) {
+    public boolean test3jAngles(double a, double b, double c) {
         this.polygons.get("1").is_colliding = false;
         this.polygons.get("1").is_in_bounds = true;
         this.polygons.get("1").rotate(-this.rotations[0]);
@@ -97,7 +97,7 @@ public class Sim {
         this.polygons.get("end").rotate(-this.rotations[2]);
         this.polygons.get("end").rotate(c);
 
-        this.rotations = new float[]{a, b, c};
+        this.rotations = new double[]{a, b, c};
 
         this.update();
 
@@ -113,7 +113,7 @@ public class Sim {
         return end1 || endroot || endground || dosroot || dosground || unoground || !within;
     }
 
-    public boolean test3jGlobalAngles(float a, float b, float c) {
+    public boolean test3jGlobalAngles(double a, double b, double c) {
         return this.test3jAngles(a, b-a, c-b);
     }
 
@@ -121,46 +121,46 @@ public class Sim {
     // POSITIONS
 
 
-    public void addPosition(String name, float a, float b, float c) {
-        this.positions.put(name, new float[]{a, b, c});
+    public void addPosition(String name, double a, double b, double c) {
+        this.positions.put(name, new double[]{a, b, c});
     }
 
     public void testPosition(String name) {
         this.current_test_position = name;
-        float[] position = this.positions.get(name);
+        double[] position = this.positions.get(name);
         this.test3jGlobalAngles(position[0], position[1], position[2]);
     }
 
-    public float getShortestAngularDistance(float a, float b) {
-        float diff = b - a;
+    public double getShortestAngularDistance(double a, double b) {
+        double diff = b - a;
 
-        if (Math.abs((double) diff) <= 180) {
+        if (Math.abs(diff) <= 180) {
             return diff;
         } else {
             return diff - Math.copySign(360, diff);
         }
     }
 
-    public float[][] generatePath(String target_position, int steps, boolean visualized) {
-        float[][] checks = new float[steps+1][3];
+    public double[][] generatePath(String target_position, int steps, boolean visualized) {
+        double[][] checks = new double[steps+1][3];
 
-        float start_a = this.getGlobalA();
-        float start_b = this.getGlobalB();
-        float start_c = this.getGlobalC();
+        double start_a = this.getGlobalA();
+        double start_b = this.getGlobalB();
+        double start_c = this.getGlobalC();
 
         System.out.println("\n"+start_a+" "+start_b+" "+start_c);
         System.out.println(this.getGlobalA(target_position)+" "+this.getGlobalB(target_position)+" "+this.getGlobalC(target_position));
 
-        float a_dist = this.getShortestAngularDistance(start_a, this.getGlobalA(target_position));
-        float b_dist = this.getShortestAngularDistance(start_b, this.getGlobalB(target_position));
-        float c_dist = this.getShortestAngularDistance(start_c, this.getGlobalC(target_position));
+        double a_dist = this.getShortestAngularDistance(start_a, this.getGlobalA(target_position));
+        double b_dist = this.getShortestAngularDistance(start_b, this.getGlobalB(target_position));
+        double c_dist = this.getShortestAngularDistance(start_c, this.getGlobalC(target_position));
 
         System.out.println(a_dist+" "+b_dist+" "+c_dist);
 
         this.current_test_position = "null";
         for (int i = 0; i < steps; i++) {
             if (!this.test3jGlobalAngles(start_a+((i*a_dist)/steps), start_b+((i*b_dist)/steps), start_c+((i*c_dist)/steps))) {
-                checks[i] = new float[]{start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps)};
+                checks[i] = new double[]{start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps), start_a+((i*a_dist)/steps)};
             } else {
                 System.out.println("COLLISION");
                 // do fix if this ever happens
@@ -175,7 +175,7 @@ public class Sim {
             }
         }
         if (!this.test3jGlobalAngles(this.getGlobalA(target_position), this.getGlobalB(target_position), this.getGlobalC(target_position))) {
-            checks[checks.length-1] = new float[]{this.getGlobalA(target_position), this.getGlobalB(target_position), this.getGlobalC(target_position)};
+            checks[checks.length-1] = new double[]{this.getGlobalA(target_position), this.getGlobalB(target_position), this.getGlobalC(target_position)};
         } else {
             System.out.println("COLLISION");
             // do fix if this ever happens
@@ -194,7 +194,7 @@ public class Sim {
     // TARGETING
 
 
-    public void ikAim(float d, float h) {
+    public void ikAim(double d, double h) {
         this.target_position[0] = d;
         this.target_position[1] = h;
         win.repaint();
@@ -202,7 +202,7 @@ public class Sim {
         this.polygons.get("end").rotateAroundMate2(this.getIkAimAngle(d, h));
     }
 
-    public float getIkAimAngle(float d, float h) {
+    public double getIkAimAngle(double d, double h) {
         if (this.current_test_position != "shooting") {
             System.out.println("CANNOT TARGET RIGHT NOW");
             System.out.println("moving...");
@@ -213,7 +213,7 @@ public class Sim {
         d = d - this.polygons.get("end").getMate2X();
         h = h - this.polygons.get("end").getMate2Y();
 
-        float theta = (float) Math.toDegrees(Math.atan((double) h/d));
+        double theta = Math.toDegrees(Math.atan(h/d));
 
         return theta;
     }
@@ -222,51 +222,51 @@ public class Sim {
     // ANGLE GETS
 
 
-    public float getA() {
+    public double getA() {
         return this.positions.get(this.current_test_position)[0];
     }
 
-    public float getB() {
+    public double getB() {
         return this.positions.get(this.current_test_position)[1]+this.getA();
     }
 
-    public float getC() {
+    public double getC() {
         return this.positions.get(this.current_test_position)[2]+this.getB();
     }
 
-    public float getGlobalA() {
+    public double getGlobalA() {
         return this.positions.get(this.current_test_position)[0];
     }
 
-    public float getGlobalB() {
+    public double getGlobalB() {
         return this.positions.get(this.current_test_position)[1];
     }
 
-    public float getGlobalC() {
+    public double getGlobalC() {
         return this.positions.get(this.current_test_position)[2];
     }
 
-    public float getA(String position) {
+    public double getA(String position) {
         return this.positions.get(position)[0];
     }
 
-    public float getB(String position) {
+    public double getB(String position) {
         return this.positions.get(position)[1]+this.getA(position);
     }
 
-    public float getC(String position) {
+    public double getC(String position) {
         return this.positions.get(position)[2]+this.getB(position);
     }
 
-    public float getGlobalA(String position) {
+    public double getGlobalA(String position) {
         return this.positions.get(position)[0];
     }
 
-    public float getGlobalB(String position) {
+    public double getGlobalB(String position) {
         return this.positions.get(position)[1];
     }
 
-    public float getGlobalC(String position) {
+    public double getGlobalC(String position) {
         return this.positions.get(position)[2];
     }
 }

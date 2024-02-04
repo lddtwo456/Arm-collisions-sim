@@ -10,9 +10,9 @@ public class Win extends JFrame {
     int w;
     int h;
 
-    float scale;
+    double scale;
 
-    public Win(int w, int h, float scale, Map<String, ConvexPolygon> polygons, float[] target_position) {
+    public Win(int w, int h, double scale, Map<String, ConvexPolygon> polygons, double[] target_position) {
         this.w = w;
         this.h = h;
 
@@ -28,10 +28,10 @@ public class Win extends JFrame {
 
     class DrawWin extends JPanel {
         Map<String, ConvexPolygon> polygons;
-        float[] target_position;
-        float scale;
+        double[] target_position;
+        double scale;
 
-        public DrawWin(Map<String, ConvexPolygon> polygons, float scale, float[] target_position) {
+        public DrawWin(Map<String, ConvexPolygon> polygons, double scale, double[] target_position) {
             this.polygons = polygons;
             this.scale = scale;
             this.target_position = target_position;
@@ -47,7 +47,7 @@ public class Win extends JFrame {
             }
 
             g.setColor(Color.WHITE);
-            g.fillOval(Math.round(this.target_position[0]*this.scale + (this.getWidth()/2)), Math.round(-this.target_position[1]*this.scale + (this.getHeight()/2)), 10, 10);
+            g.fillOval((int) Math.round(this.target_position[0]*this.scale + (this.getWidth()/2)), (int) Math.round(-this.target_position[1]*this.scale + (this.getHeight()/2)), 10, 10);
         }
     }
 }
